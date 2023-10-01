@@ -60,7 +60,7 @@ class CartController extends Controller
             'lstArea' => TINHTHANH::all(),
             'lstBranch' => CHINHANH::all(),
         ];
-        
+
         return view($this->user."thanh-toan")->with($data);
     }
 
@@ -72,7 +72,7 @@ class CartController extends Controller
                 $data = [
                     'order' => DONHANG::find($request->id),
                 ];
-                
+
                 return view($this->user.'thanh-cong')->with($data);
             }
 
@@ -102,7 +102,7 @@ class CartController extends Controller
 
         // danh sách id_sp thanh toán
         $idList = explode(',', $request->id_sp_list);
-        
+
         /*kiểm tra slton kho của sản phẩm. nếu 1 trong những sp hết hàng
         thì trả về lỗi. ngược lại tiến hành thanh toán*/
         $checkout = true;
@@ -296,7 +296,7 @@ class CartController extends Controller
                     "key2" => "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
                     "endpoint" => "https://sb-openapi.zalopay.vn/v2/create"
                 ];
-        
+
                 $embeddata = '{}'; // Merchant's data
                 $items = '[]'; // Merchant's data
                 $transID =  rand(0,1000000);
@@ -308,15 +308,15 @@ class CartController extends Controller
                     "amount" => $order['tongtien'],
                     "item" => $items,
                     "embed_data" => $embeddata,
-                    "description" => "LDMobile - Thanh toán đơn hàng",
+                    "description" => "Cadozvex - Thanh toán đơn hàng",
                     "bank_code" => ""
                 ];
-        
+
                 // appid|app_trans_id|appuser|amount|apptime|embeddata|item
                 $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . $order["amount"]
                     . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
                 $order["mac"] = hash_hmac("sha256", $data, $config["key1"]);
-        
+
                 $context = stream_context_create([
                     "http" => [
                         "header" => "Content-type: application/x-www-form-urlencoded\r\n",
@@ -324,16 +324,16 @@ class CartController extends Controller
                         "content" => http_build_query($order)
                     ]
                 ]);
-        
+
                 $resp = file_get_contents($config["endpoint"], false, $context);
                 $result = json_decode($resp, true);
-        
+
                 return redirect($result['order_url']);
-        
+
                 // foreach ($result as $key => $value) {
                 //     echo "$key: $value<br>";
                 // }
-                
+
                 // return false;
             }
         }
@@ -392,7 +392,7 @@ class CartController extends Controller
                 "key2" => "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf",
                 "endpoint" => "https://sb-openapi.zalopay.vn/v2/query"
             ];
-            
+
             $app_trans_id = $data["apptransid"];  // Input your app_trans_id
             $data_2 = $config["app_id"]."|".$app_trans_id."|".$config["key1"]; // app_id|app_trans_id|key1
             $params = [
@@ -400,7 +400,7 @@ class CartController extends Controller
                 "app_trans_id" => $app_trans_id,
                 "mac" => hash_hmac("sha256", $data_2, $config["key1"])
             ];
-            
+
             $context = stream_context_create([
                 "http" => [
                     "header" => "Content-type: application/x-www-form-urlencoded\r\n",
@@ -408,7 +408,7 @@ class CartController extends Controller
                     "content" => http_build_query($params)
                 ]
             ]);
-            
+
             $resp = file_get_contents($config["endpoint"], false, $context);
             $result = json_decode($resp, true);
 
@@ -433,7 +433,7 @@ class CartController extends Controller
                     'status' => 'login required'
                 ];
             }
-            
+
             $data = [
                 'id_tk' => session('user')->id,
                 'id_sp' => $request->id_sp,
@@ -446,7 +446,7 @@ class CartController extends Controller
                 return [
                     'status' => 'new one',
                 ];
-            } 
+            }
             // kiểm tra cập nhật số lượng hoặc tạo mới
             else {
                 foreach(TAIKHOAN::find(session('user')->id)->giohang as $cart){
@@ -513,7 +513,7 @@ class CartController extends Controller
                     $data['qtyInStock'] = $qtyInStock;
                     return $data;
                 }
-            } 
+            }
             // giảm số lượng
             else {
                 GIOHANG::where('id', $request->id)->update(['sl' => --$qty]);
@@ -568,7 +568,7 @@ class CartController extends Controller
             if(empty($request->idList)) {
                 return $response;
             }
-            
+
             $id_tk = session('user')->id;
 
             foreach($request->idList as $id_sp) {
@@ -576,7 +576,7 @@ class CartController extends Controller
 
                 if($product['trangthai']) {
                     $qtyInStock = KHO::where('id_sp', $id_sp)->sum('slton');
-    
+
                     if($qtyInStock > 0) {
                         $price = $product['giakhuyenmai'];
                         $qtyInCart = GIOHANG::where('id_tk', $id_tk)->where('id_sp', $id_sp)->first()->sl;
